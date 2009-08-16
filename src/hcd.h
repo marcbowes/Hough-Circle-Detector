@@ -19,6 +19,8 @@ class HoughCircleDetector
   
   private: /* methods */
   
+    void accumulate(QImage &image, const QPoint &position);
+    void circle(QImage &image, const QPoint &position, unsigned int radius);
     QImage edges(const QImage &source);
 };
 

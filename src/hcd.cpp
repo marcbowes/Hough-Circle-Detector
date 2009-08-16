@@ -8,6 +8,7 @@
 
 #include <QVector>
 #include <QByteArray>
+#include <QColor>
 #include <cmath>
 
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
@@ -53,7 +54,7 @@ QImage HoughCircleDetector::detect(const QImage &source)
       {
         if(binary.pixel(x, y) == 1)
         {
-          /* draw/accumulate a circle of radius i at (x, y) */
+          circle(hough, QPoint(x, y), i);
         }
       }
     }
@@ -72,6 +73,67 @@ QImage HoughCircleDetector::detect(const QImage &source)
 
 ****************************************************************************/
 
+
+/****************************************************************************
+**
+** Author: Marc Bowes
+**
+** Accumulates intensity at the specified position
+**
+****************************************************************************/
+void HoughCircleDetector::accumulate(QImage &image, const QPoint &position)
+{
+  QColor color(image.pixel(position));
+  color.setRgb(color.red() + 1, color.green() + 1, color.blue () + 1);
+  image.setPixel(position, color.rgb());
+}
+
+/****************************************************************************
+**
+** Author: Marc Bowes
+**
+** Draws a circle on the specified image at the specified position with the
+** specified radius, using the midpoint circle drawing algorithm
+**
+** Adapted from: http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+**
+****************************************************************************/
+void HoughCircleDetector::circle(QImage &image, const QPoint &position, unsigned int radius)
+{
+  int f = 1 - radius;
+  int ddF_x = 1;
+  int ddF_y = -2 * radius;
+  int x = 0;
+  int y = radius;
+
+  accumulate(image, QPoint(position.x(), position.y() + radius));
+  accumulate(image, QPoint(position.x(), position.y() - radius));
+  accumulate(image, QPoint(position.x() + radius, position.y()));
+  accumulate(image, QPoint(position.x() - radius, position.y()));
+  
+  while(x < y)
+  {
+    if(f >= 0)
+    {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+    
+    accumulate(image, QPoint(position.x() + x, position.y() + y));
+    accumulate(image, QPoint(position.x() - x, position.y() + y));
+    accumulate(image, QPoint(position.x() + x, position.y() - y));
+    accumulate(image, QPoint(position.x() - x, position.y() - y));
+    accumulate(image, QPoint(position.x() + y, position.y() + x));
+    accumulate(image, QPoint(position.x() - y, position.y() + x));
+    accumulate(image, QPoint(position.x() + y, position.y() - x));
+    accumulate(image, QPoint(position.x() - y, position.y() - x));
+  }
+}
 
 /****************************************************************************
 **
