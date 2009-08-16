@@ -4,6 +4,7 @@ INCLUDE(${QT_USE_FILE})
 
 # .cxx sources
 SET(HCD_SRCS_CXX
+  hcd.cpp
   main.cpp
 )
 
@@ -22,4 +23,6 @@ ELSEIF(APPLE)
 ELSEIF(WIN32)
   ADD_EXECUTABLE(hcd WIN32 ${HCD_SRCS_CXX})
 ENDIF()
+
+TARGET_LINK_LIBRARIES(hcd ${QT_LIBRARIES})
 
