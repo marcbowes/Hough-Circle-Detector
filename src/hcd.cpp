@@ -10,6 +10,8 @@
 #include <QByteArray>
 #include <cmath>
 
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+
 /****************************************************************************
                 __   ___                 __  __           __
      ___  __ __/ /  / (_)___  __ _  ___ / /_/ /  ___  ___/ /__
@@ -30,8 +32,34 @@
 QImage HoughCircleDetector::detect(const QImage &source)
 {
   QImage binary = edges(source);
+  QImage detection;
+    
+  /* build a vector to hold images in Hough-space for radius 1..max_r, where
+  max_r is the maximum radius of a circle in this image */
+  unsigned int max_r = MIN(source.width(), source.height()) / 2;
+  QVector<QImage> houghs(max_r);
+  for(unsigned int i = 0; i < max_r; i++)
+  {
+    /* instantiate Hough-space for circles of radius i, with a 24-bit image of
+    dimensions equal to the source image, filled with black */
+    houghs[i] = QImage(source.size(), QImage::Format_RGB888); /* 24 bit */
+    QImage &hough = houghs[i];
+    hough.fill(NULL);
+    
+    /* find all the edges */
+    for(unsigned int x = 0; x < binary.width(); x++)
+    {
+      for(unsigned int y = 0; y < binary.height(); y++)
+      {
+        if(binary.pixel(x, y) == 1)
+        {
+          /* draw/accumulate a circle of radius i at (x, y) */
+        }
+      }
+    }
+  }
   
-  return binary;
+  return detection;
 }
 
 
