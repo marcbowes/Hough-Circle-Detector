@@ -83,6 +83,12 @@ QImage HoughCircleDetector::detect(const QImage &source)
 ****************************************************************************/
 void HoughCircleDetector::accumulate(QImage &image, const QPoint &position)
 {
+  if(position.x() < 0 || position.x() >= image.width() ||
+     position.y() < 0 || position.y() >= image.height())
+  {
+    return;
+  }
+  
   QColor color(image.pixel(position));
   color.setRgb(color.red() + 1, color.green() + 1, color.blue () + 1);
   image.setPixel(position, color.rgb());
