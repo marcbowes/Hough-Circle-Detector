@@ -6,6 +6,9 @@
 
 #include "hcd.h"
 
+#include <QVector>
+#include <QByteArray>
+
 /****************************************************************************
                 __   ___                 __  __           __
      ___  __ __/ /  / (_)___  __ _  ___ / /_/ /  ___  ___/ /__
@@ -26,6 +29,8 @@
 QImage HoughCircleDetector::detect(const QImage &source)
 {
   QImage binary = edges(source);
+  
+  return binary;
 }
 
 
@@ -48,6 +53,22 @@ QImage HoughCircleDetector::detect(const QImage &source)
 ****************************************************************************/
 QImage HoughCircleDetector::edges(const QImage &source)
 {
-
+  /* initialisation */
+  QImage binary = QImage(source.size(), QImage::Format_Mono);
+  
+  /*** Sobel edge detection ***/
+  
+  /* Set up Lx, Ly */
+  QVector<QByteArray> Lx(3), Ly(3);
+  
+  Lx[0][0] = -1;  Lx[0][1] = +0;  Lx[0][2] = +1;
+  Lx[1][0] = -2;  Lx[1][1] = +0;  Lx[1][2] = +2;
+  Lx[2][0] = -1;  Lx[2][1] = +0;  Lx[2][2] = +1;
+  
+  Ly[0][0] = +1;  Ly[0][1] = +2;  Ly[0][2] = +1;
+  Ly[1][0] = +0;  Ly[1][1] = +0;  Ly[1][2] = +0;
+  Ly[2][0] = -1;  Ly[2][1] = -2;  Ly[2][2] = -1;
+  
+  return binary;
 }
 
