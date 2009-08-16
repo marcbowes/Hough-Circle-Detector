@@ -8,6 +8,7 @@
 
 #include <QVector>
 #include <QByteArray>
+#include <cmath>
 
 /****************************************************************************
                 __   ___                 __  __           __
@@ -68,6 +69,41 @@ QImage HoughCircleDetector::edges(const QImage &source)
   Ly[0][0] = +1;  Ly[0][1] = +2;  Ly[0][2] = +1;
   Ly[1][0] = +0;  Ly[1][1] = +0;  Ly[1][2] = +0;
   Ly[2][0] = -1;  Ly[2][1] = -2;  Ly[2][2] = -1;
+  
+  for(unsigned int x = 0; x < source.width(); x++)
+  {
+    for(unsigned int y = 0; y < source.height(); y++)
+    {
+      double new_x = 0.0, new_y = 0.0;
+      
+      /* gradient */
+      for(int i = -1; i <= 1; i++)
+      {
+        for(int j = -1; j <= 1; j++)
+        {
+          /* these are offset co-ords */
+          int _x = x + i;
+          int _y = y + j;
+          
+          /* bounds checking */
+          if (_x < 0)                     _x = -_x;
+          else if (_x >= source.width())  _x = 2 * source.width() - _x - 2;
+          
+          if (_y < 0)                     _y = -_y;
+          else if (_y >= source.height()) _y = 2 * source.height() - _y - 2;
+          
+          /* accumulate */
+          int gray = qGray(source.pixel(_x, _y));
+          new_x += Lx[i + 1][j + 1] * gray;
+          new_y += Ly[i + 1][j + 1] * gray;
+        }
+      }
+      
+      /* using 128 as a threshold, decide if the steepness is sufficient (= edge = 1) */
+      int pixel = sqrt(pow(new_x, 2) + pow(new_y, 2)) > 128 ? 1 : 0;
+      binary.setPixel(x, y, pixel);
+    }
+  }
   
   return binary;
 }

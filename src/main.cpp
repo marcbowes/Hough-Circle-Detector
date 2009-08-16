@@ -47,6 +47,13 @@ int main(int argc, char **argv)
     return 1;
   }
   
+  QImage source_image(source);
+  if (source_image.isNull())
+  {
+    qDebug() << "Could not load source file";
+    return 1;
+  }
+  
   if(output.isEmpty())
   {
     output = QString("%1.out").arg(source);
@@ -60,6 +67,7 @@ int main(int argc, char **argv)
   the specified output file ***/
   
   HoughCircleDetector hcd;
-  QImage result = hcd.detect(QImage(source));
+  QImage result = hcd.detect(source_image);
+  qDebug() << "saving.." << result.save(output);
 }
 
