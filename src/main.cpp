@@ -68,6 +68,6 @@ int main(int argc, char **argv)
   
   HoughCircleDetector hcd;
   QImage result = hcd.detect(source_image);
-  qDebug() << "saving.." << result.save(output);
+  result.save(output);
 }
 
