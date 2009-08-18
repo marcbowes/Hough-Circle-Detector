@@ -41,7 +41,7 @@ Change to a build director and run cmake from there. For example, in a Unix-like
 
 * `cd /path/to/hough-circle-detector`
 * `cd build`
-* `cmake ..` or add additional options such as `cmake -DCMAKE_BUILD_TYPE=debug`
+* `cmake ..` or add additional options such as `cmake -DCMAKE_BUILD_TYPE=debug ..`
 * Use ccmake [ `ccmake ..` ] if you wish to change additional cmake options
 * `make`
 
