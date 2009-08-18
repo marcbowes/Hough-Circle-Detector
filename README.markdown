@@ -56,6 +56,10 @@ The binary also accepts parameters for minimum and maximum circle radii to searc
 `cd build; src/hcd --minr=10 --maxr=40`
 The above settings are appropriate for the sample images, as circles tend to be of radius 15 and 32. Other values will work too, but will incur additional processing time.
 
+The easiest way to run this program is by using a find script. For example, assuming you have the sample images in an `images/` directory, run:
+`find /path/to/images/*.gif -exec /patth/to/hcd --source={} \;`
+Assuming that the sample images are being used, you can add on the above mentioned min/max-r settings for good performance.
+
 Qt does not support writing of all image formats. However, by default it does read a large number. I have not explicitly set the output format, so it will try and guess it from the filename. Therefore,
 I recommend simply setting the output filename to anything ending in .jpg, as I know that this works.
 
