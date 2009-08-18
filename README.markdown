@@ -60,6 +60,6 @@ Assuming that the sample images are being used, you can add on the above mention
 Qt does not support writing of all image formats. However, by default it does read a large number. I have not explicitly set the output format, so it will try and guess it from the filename. Therefore,
 I recommend simply setting the output filename to anything ending in .jpg, as I know that this works.
 
-For a listing of supported file formats, visit [Reading and Writing Image Files](http://doc.trolltech.com/4.5/qimage.html#reading-and-writing-image-files)
+For a listing of supported file formats, visit [Reading and Writing Image Files](http://doc.trolltech.com/4.5/qimage.html#reading-and-writing-image-files).
 
 As a side note, it is possible to get additional file type support by adding plugins. Again, this is out of the scope of the practical, so I didn't bother including ones.
