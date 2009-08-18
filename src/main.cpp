@@ -56,7 +56,7 @@ int main(int argc, char **argv)
   
   if(output.isEmpty())
   {
-    output = QString("%1.out").arg(source);
+    output = QString("%1.out.jpg").arg(source);
     
     qDebug() << "Missing output file, assuming" << output << 
     "please kill the process if you do not agree with this decision" <<

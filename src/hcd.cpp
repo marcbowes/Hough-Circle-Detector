@@ -38,15 +38,21 @@ QImage HoughCircleDetector::detect(const QImage &source)
     
   /* build a vector to hold images in Hough-space for radius 1..max_r, where
   max_r is the maximum radius of a circle in this image */
-  unsigned int max_r = MIN(source.width(), source.height()) / 2; max_r = 35;
-  QVector<QImage> houghs(max_r);
+  unsigned int max_r = MIN(source.width(), source.height()) / 2;
+  QVector<Image> houghs(max_r);
   for(unsigned int i = 1; i < max_r; i++)
   {
-    /* instantiate Hough-space for circles of radius i, with a 24-bit image of
-    dimensions equal to the source image, filled with black */
-    houghs[i] = QImage(source.size(), QImage::Format_RGB888); /* 24 bit */
-    QImage &hough = houghs[i];
-    hough.fill(NULL);
+    /* instantiate Hough-space for circles of radius i */
+    Image &hough = houghs[i];
+    hough.resize(binary.width());
+    for(unsigned int x = 0; x < hough.size(); x++)
+    {
+      hough[x].resize(binary.height());
+      for(unsigned int y = 0; y < hough[x].size(); y++)
+      {
+        hough[x][y] = 0;
+      }
+    }
     
     /* find all the edges */
     for(unsigned int x = 0; x < binary.width(); x++)
@@ -56,7 +62,7 @@ QImage HoughCircleDetector::detect(const QImage &source)
         /* edge! */
         if(binary.pixelIndex(x, y) == 1)
         {
-          circle(hough, QPoint(x, y), i);
+          accum_circle(hough, QPoint(x, y), i);
         }
       }
     }
@@ -66,17 +72,17 @@ QImage HoughCircleDetector::detect(const QImage &source)
   indicate the center of a circle, then draw circles in image-space */
   for(unsigned int i = 1; i < max_r; i++)
   {
-    QImage &hough = houghs[i];
-    unsigned int threshold = -1;
+    Image &hough = houghs[i];
+    unsigned int threshold = 12.5 * i;
     
     /* find all the bright spots */
-    for(unsigned int x = 0; x < binary.width(); x++)
+    for(unsigned int x = 0; x < hough.size(); x++)
     {
-      for(unsigned int y = 0; y < binary.height(); y++)
+      for(unsigned int y = 0; y < hough[x].size(); y++)
       {
-        if(binary.pixel(x, y) > threshold)
+        if(hough[x][y] >= threshold)
         {
-          circle(detection, QPoint(x, y), i, true);
+          draw_circle(detection, QPoint(x, y), i, Qt::yellow);
         }
       }
     }
@@ -100,14 +106,13 @@ QImage HoughCircleDetector::detect(const QImage &source)
 **
 ** Author: Marc Bowes
 **
-** Draws a circle on the specified image at the specified position with the
-** specified radius, using the midpoint circle drawing algorithm
+** Accumulates a circle on the specified image at the specified position with
+** the specified radius, using the midpoint circle drawing algorithm
 **
 ** Adapted from: http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
 **
 ****************************************************************************/
-void HoughCircleDetector::circle(QImage &image, const QPoint &position, unsigned int radius,
-  bool mode)
+void HoughCircleDetector::accum_circle(Image &image, const QPoint &position, unsigned int radius)
 {
   int f = 1 - radius;
   int ddF_x = 1;
@@ -115,10 +120,10 @@ void HoughCircleDetector::circle(QImage &image, const QPoint &position, unsigned
   int x = 0;
   int y = radius;
   
-  draw(image, QPoint(position.x(), position.y() + radius), mode);
-  draw(image, QPoint(position.x(), position.y() - radius), mode);
-  draw(image, QPoint(position.x() + radius, position.y()), mode);
-  draw(image, QPoint(position.x() - radius, position.y()), mode);
+  accum_pixel(image, QPoint(position.x(), position.y() + radius));
+  accum_pixel(image, QPoint(position.x(), position.y() - radius));
+  accum_pixel(image, QPoint(position.x() + radius, position.y()));
+  accum_pixel(image, QPoint(position.x() - radius, position.y()));
   
   while(x < y)
   {
@@ -133,14 +138,14 @@ void HoughCircleDetector::circle(QImage &image, const QPoint &position, unsigned
     ddF_x += 2;
     f += ddF_x;
     
-    draw(image, QPoint(position.x() + x, position.y() + y), mode);
-    draw(image, QPoint(position.x() - x, position.y() + y), mode);
-    draw(image, QPoint(position.x() + x, position.y() - y), mode);
-    draw(image, QPoint(position.x() - x, position.y() - y), mode);
-    draw(image, QPoint(position.x() + y, position.y() + x), mode);
-    draw(image, QPoint(position.x() - y, position.y() + x), mode);
-    draw(image, QPoint(position.x() + y, position.y() - x), mode);
-    draw(image, QPoint(position.x() - y, position.y() - x), mode);
+    accum_pixel(image, QPoint(position.x() + x, position.y() + y));
+    accum_pixel(image, QPoint(position.x() - x, position.y() + y));
+    accum_pixel(image, QPoint(position.x() + x, position.y() - y));
+    accum_pixel(image, QPoint(position.x() - x, position.y() - y));
+    accum_pixel(image, QPoint(position.x() + y, position.y() + x));
+    accum_pixel(image, QPoint(position.x() - y, position.y() + x));
+    accum_pixel(image, QPoint(position.x() + y, position.y() - x));
+    accum_pixel(image, QPoint(position.x() - y, position.y() - x));
   }
 }
 
@@ -148,10 +153,76 @@ void HoughCircleDetector::circle(QImage &image, const QPoint &position, unsigned
 **
 ** Author: Marc Bowes
 **
-** Accumulates intensity at the specified position
+** Accumulates at the specified position
 **
 ****************************************************************************/
-void HoughCircleDetector::draw(QImage &image, const QPoint &position, bool mode)
+void HoughCircleDetector::accum_pixel(Image &image, const QPoint &position)
+{
+  /* bounds checking */
+  if(position.x() < 0 || position.x() >= image.size() ||
+     position.y() < 0 || position.y() >= image[position.x()].size())
+  {
+    return;
+  }
+  
+  image[position.x()][position.y()]++;
+}
+
+/****************************************************************************
+**
+** Author: Marc Bowes
+**
+** Draws a circle on the specified image at the specified position with
+** the specified radius, using the midpoint circle drawing algorithm
+**
+** Adapted from: http://en.wikipedia.org/wiki/Midpoint_circle_algorithm
+**
+****************************************************************************/
+void HoughCircleDetector::draw_circle(QImage &image, const QPoint &position, unsigned int radius, const QColor &color)
+{
+  int f = 1 - radius;
+  int ddF_x = 1;
+  int ddF_y = -2 * radius;
+  int x = 0;
+  int y = radius;
+  
+  draw_pixel(image, QPoint(position.x(), position.y() + radius), color);
+  draw_pixel(image, QPoint(position.x(), position.y() - radius), color);
+  draw_pixel(image, QPoint(position.x() + radius, position.y()), color);
+  draw_pixel(image, QPoint(position.x() - radius, position.y()), color);
+  
+  while(x < y)
+  {
+    if(f >= 0)
+    {
+      y--;
+      ddF_y += 2;
+      f += ddF_y;
+    }
+    
+    x++;
+    ddF_x += 2;
+    f += ddF_x;
+    
+    draw_pixel(image, QPoint(position.x() + x, position.y() + y), color);
+    draw_pixel(image, QPoint(position.x() - x, position.y() + y), color);
+    draw_pixel(image, QPoint(position.x() + x, position.y() - y), color);
+    draw_pixel(image, QPoint(position.x() - x, position.y() - y), color);
+    draw_pixel(image, QPoint(position.x() + y, position.y() + x), color);
+    draw_pixel(image, QPoint(position.x() - y, position.y() + x), color);
+    draw_pixel(image, QPoint(position.x() + y, position.y() - x), color);
+    draw_pixel(image, QPoint(position.x() - y, position.y() - x), color);
+  }
+}
+
+/****************************************************************************
+**
+** Author: Marc Bowes
+**
+** Draws at the specified position
+**
+****************************************************************************/
+void HoughCircleDetector::draw_pixel(QImage &image, const QPoint &position, const QColor &color)
 {
   /* bounds checking */
   if(position.x() < 0 || position.x() >= image.width() ||
@@ -160,16 +231,7 @@ void HoughCircleDetector::draw(QImage &image, const QPoint &position, bool mode)
     return;
   }
   
-  if(mode)
-  {
-    image.setPixel(position, Qt::yellow);
-  }
-  else
-  {
-    QColor color(image.pixel(position));
-    color.setRgb(color.red() + 1, color.green() + 1, color.blue() + 1);
-    image.setPixel(position, color.rgb());
-  }
+  image.setPixel(position, color.rgb());
 }
 
 /****************************************************************************
