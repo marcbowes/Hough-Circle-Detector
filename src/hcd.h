@@ -19,7 +19,7 @@ class HoughCircleDetector
   
   public: /* methods */
   
-    QImage detect(const QImage &source);
+    QImage detect(const QImage &source, unsigned int min_r, unsigned int max_r);
   
   private: /* methods */
   

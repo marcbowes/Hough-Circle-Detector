@@ -31,19 +31,29 @@
 ** Detects circles in the specified QImage
 **
 ****************************************************************************/
-QImage HoughCircleDetector::detect(const QImage &source)
+QImage HoughCircleDetector::detect(const QImage &source, unsigned int min_r, unsigned int max_r)
 {
   QImage binary = edges(source);
   QImage detection(source);
     
   /* build a vector to hold images in Hough-space for radius 1..max_r, where
-  max_r is the maximum radius of a circle in this image */
-  unsigned int max_r = MIN(source.width(), source.height()) / 2;
-  QVector<Image> houghs(max_r);
-  for(unsigned int i = 1; i < max_r; i++)
+  max_r is specified or the maximum radius of a circle in this image */
+  if(min_r == 0)
+  {
+    min_r = 5;
+  }
+  
+  if(max_r == 0)
+  {
+    max_r = MIN(source.width(), source.height()) / 2;
+  }
+  
+  QVector<Image> houghs(max_r - min_r);
+  
+  for(unsigned int i = min_r; i < max_r; i++)
   {
     /* instantiate Hough-space for circles of radius i */
-    Image &hough = houghs[i];
+    Image &hough = houghs[i - min_r];
     hough.resize(binary.width());
     for(unsigned int x = 0; x < hough.size(); x++)
     {
@@ -66,21 +76,15 @@ QImage HoughCircleDetector::detect(const QImage &source)
         }
       }
     }
-  }
-  
-  /* loop through all the Hough-space images, searching for bright spots, which
-  indicate the center of a circle, then draw circles in image-space */
-  for(unsigned int i = 1; i < max_r; i++)
-  {
-    Image &hough = houghs[i];
-    unsigned int threshold = 12.5 * i;
     
-    /* find all the bright spots */
+    /* loop through all the Hough-space images, searching for bright spots, which
+    indicate the center of a circle, then draw circles in image-space */
+    unsigned int threshold = 4.9 * i;
     for(unsigned int x = 0; x < hough.size(); x++)
     {
       for(unsigned int y = 0; y < hough[x].size(); y++)
       {
-        if(hough[x][y] >= threshold)
+        if(hough[x][y] > threshold)
         {
           draw_circle(detection, QPoint(x, y), i, Qt::yellow);
         }
