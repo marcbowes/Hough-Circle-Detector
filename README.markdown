@@ -50,11 +50,8 @@ On Windows, the steps are equivalent - just set cmake to generate the correct fi
 ## Running the solution
 
 By default, cmake will compile the binary into the src/ directory in the build folder. The binary requires at least a source image. I recommend running as:
-`cd build; src/hcd --source=file.jpg --output=file.out.jpg`
-
-The binary also accepts parameters for minimum and maximum circle radii to search for. By default this is 5..MAX, where MAX is the radius of the biggest circle which could fit in the image. Example:
-`cd build; src/hcd --minr=10 --maxr=40`
-The above settings are appropriate for the sample images, as circles tend to be of radius 15 and 32. Other values will work too, but will incur additional processing time.
+`cd build; src/hcd --source=test.gif --output=test.out.jpg --minr=10 --maxr=40`
+These settings are appropriate for the sample images, as circles tend to be of radius 15 and 32. Other values will work too, but will incur additional processing time.
 
 The easiest way to run this program is by using a find script. For example, assuming you have the sample images in an `images/` directory, run:
 `find /path/to/images/*.gif -exec /patth/to/hcd --source={} \;`
