@@ -7,6 +7,7 @@
 #include <QString>
 #include <QRegExp>
 #include <QDebug>
+#include <QImageReader>
 
 #include "hcd.h"
 
@@ -63,6 +64,8 @@ int main(int argc, char **argv)
   if (source_image.isNull())
   {
     qDebug() << "Could not load source file";
+    qDebug() << "Supported image formats:";
+    qDebug() << QImageReader::supportedImageFormats();
     return 1;
   }
   

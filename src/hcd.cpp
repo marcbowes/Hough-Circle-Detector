@@ -34,8 +34,8 @@
 QImage HoughCircleDetector::detect(const QImage &source, unsigned int min_r, unsigned int max_r)
 {
   QImage binary = edges(source);
-  QImage detection(source);
-    
+  QImage detection = source.convertToFormat(QImage::Format_RGB888);
+  
   /* build a vector to hold images in Hough-space for radius 1..max_r, where
   max_r is specified or the maximum radius of a circle in this image */
   if(min_r == 0)
