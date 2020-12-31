@@ -287,8 +287,8 @@ QImage HoughCircleDetector::edges(const QImage &source)
           
           /* accumulate */
           int gray = qGray(source.pixel(_x, _y));
-          new_x += Lx[i + 1][j + 1] * gray;
-          new_y += Ly[i + 1][j + 1] * gray;
+          new_x += static_cast<signed char>(Lx[i + 1][j + 1]) * gray;
+          new_y += static_cast<signed char>(Ly[i + 1][j + 1]) * gray;
         }
       }
       
